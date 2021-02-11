@@ -8,7 +8,7 @@ from keras.preprocessing.image import img_to_array
 
 import sys
 
-IMAGE_SIZE = 128
+IMAGE_SIZE = 200
 categories = {0: "cat", 1: "dog"}
 
 SAMPLE_IMAG_PATH = "samples\\img_test.jpg"
@@ -45,8 +45,10 @@ def main():
 
     # # make prediction
     print("Processing", image_path, "\n")
-    res = (model.predict(img, verbose = 0) > 0.5).astype("int32")   
+    val = model.predict(img, verbose = 0)
+    res = (val > 0.5).astype("int32")   
 
+    print("Prediction Value : ", str(val))
     print("Predicted Class : ", str(categories.get(res.flatten()[0])))
 
 

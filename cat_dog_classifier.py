@@ -5,7 +5,6 @@ from keras.layers import MaxPooling2D
 from keras.layers import Flatten
 from keras.layers import Dense
 from keras.layers import Dropout
-import keras.regularizers
 
 import matplotlib.pyplot as plt
 
@@ -15,7 +14,7 @@ from keras.preprocessing.image import load_img
 train_dir = "cat_dog_dataset\\training_set"
 test_dir = "cat_dog_dataset\\test_set"
 
-IMAGE_SIZE = 128
+IMAGE_SIZE = 200
 BATCH_SIZE = 32
 
 
@@ -63,7 +62,8 @@ def load_data() :
 
     train_datagen = ImageDataGenerator(rescale = 1./255, 
                                        width_shift_range=0.1, 
-                                       height_shift_range=0.1, 
+                                       height_shift_range=0.1,
+                                       zoom_range=0.2,
                                        horizontal_flip=True)
 
     test_datagen = ImageDataGenerator(rescale = 1./255)
@@ -83,30 +83,33 @@ def load_data() :
 
 def get_model() :
 
-    # Initialising the CNN
+    # Initializing the CNN
     model = Sequential()
 
-    # Step 1 - Convolution
+    # Convolution
     model.add(Conv2D(32, (3, 3), input_shape = (IMAGE_SIZE, IMAGE_SIZE, 3), activation = 'relu'))
+    model.add(Conv2D(32, (3, 3), activation = 'relu'))
+    # Pooling
+    model.add(MaxPooling2D(pool_size = (2, 2)))
 
-    # Step 2 - Pooling
+    model.add(Conv2D(64, (3, 3), activation = 'relu'))
+    model.add(MaxPooling2D(pool_size = (2, 2)))
+
+    model.add(Conv2D(128, (3, 3), activation = 'relu'))
+    model.add(MaxPooling2D(pool_size = (2, 2)))
+
+    model.add(Conv2D(256, (3, 3), activation = 'relu'))
     model.add(MaxPooling2D(pool_size = (2, 2)))
     model.add(Dropout(0.2))
 
-    # Adding a second convolutional layer
-    model.add(Conv2D(64, (3, 3), activation = 'relu', kernel_regularizer=keras.regularizers.l1(1e-5)))
-    model.add(MaxPooling2D(pool_size = (2, 2)))
-    model.add(Dropout(0.2))
-
-    model.add(Conv2D(128, (3, 3), activation = 'relu', kernel_regularizer=keras.regularizers.l1(1e-5)))
-    model.add(MaxPooling2D(pool_size = (2, 2)))
-    model.add(Dropout(0.5))
-
-    # Step 3 - Flattening
+    # Flattening
     model.add(Flatten())
 
-    # Step 4 - Full connection
-    model.add(Dense(units = 128, activation = 'relu', kernel_regularizer=keras.regularizers.l1(1e-5)))
+    # Full connection
+    model.add(Dense(units = 256, activation = 'relu'))
+    model.add(Dropout(0.2))
+    model.add(Dense(units = 256, activation = 'relu'))
+    model.add(Dropout(0.2))
     model.add(Dense(units = 1, activation = 'sigmoid'))
 
     # Compiling the CNN
@@ -136,3 +139,12 @@ loss, acc = model.evaluate(test_set, steps=len(test_set))
 print("Model loss --> ", str(loss))
 print("Model accuracy --> ", str(acc))
 
+
+
+# model = get_model()
+# history = model.fit(train_set ,
+#                     steps_per_epoch = len( train_set ), epochs = 30,
+#                     validation_data = test_set ,
+#                     validation_steps = len(test_set), shuffle=True)
+
+# summarize_diagnostics(history)
